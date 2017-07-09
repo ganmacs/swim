@@ -20,8 +20,8 @@ type Swim struct {
 
 	Incarnation uint64
 
-	transport *Transport
-	config    *Config
+	session *session
+	config  *Config
 }
 
 func New(config *Config) (*Swim, error) {
@@ -53,12 +53,14 @@ func newSwim(config *Config) (*Swim, error) {
 		tp = dtr
 	}
 
+	se := &session{transport: tp}
+
 	ru := &Swim{
-		Name:      joinHostPort(config.BindAddr, config.BindPort),
-		nodeMap:   make(map[string]*Node),
-		nodeLock:  new(sync.RWMutex),
-		transport: tp,
-		config:    config,
+		Name:     joinHostPort(config.BindAddr, config.BindPort),
+		nodeMap:  make(map[string]*Node),
+		nodeLock: new(sync.RWMutex),
+		session:  se,
+		config:   config,
 	}
 
 	return ru, nil
@@ -77,7 +79,7 @@ func (sw *Swim) Join(addrs string) (int, error) {
 
 func (sw *Swim) start() {
 	log.Infof("Starting Node... %s\n", sw.Name)
-	go runMessageHandler(sw, sw.transport)
+	go sw.session.listen(sw)
 }
 
 func (sw *Swim) setAliveState() error {
