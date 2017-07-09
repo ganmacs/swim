@@ -7,6 +7,8 @@ import (
 	"github.com/ganmacs/swim/logger"
 )
 
+var log = logger.NewSimpleLogger(os.Stdout)
+
 type Swim struct {
 	Name string
 
@@ -18,8 +20,6 @@ type Swim struct {
 
 	transport *Transport
 	config    *Config
-
-	logger *logger.Logger
 }
 
 func New(config *Config) (*Swim, error) {
@@ -33,14 +33,14 @@ func New(config *Config) (*Swim, error) {
 }
 
 func newSwim(config *Config) (*Swim, error) {
-	log := config.Logger
-	if log == nil {
-		log = logger.NewSimpleLogger(os.Stdout)
+	l := config.Logger
+	if l != nil {
+		log = l
 	}
 
 	tp := config.transport
 	if tp == nil {
-		dtr, err := newTransport(config.BindAddr, config.BindPort, log)
+		dtr, err := newTransport(config.BindAddr, config.BindPort)
 		if err != nil {
 			return nil, err
 		}
@@ -52,7 +52,6 @@ func newSwim(config *Config) (*Swim, error) {
 		nodeMap:   make(map[string]*Node),
 		nodeLock:  new(sync.RWMutex),
 		transport: tp,
-		logger:    log,
 		config:    config,
 	}
 
@@ -74,7 +73,7 @@ func (sw *Swim) readAliveMessage(amsg *alive) {
 }
 
 func (sw *Swim) Start() {
-	sw.logger.Infof("Starting Node... %s\n", sw.Name)
+	log.Infof("Starting Node... %s\n", sw.Name)
 	go runMessageHandler(sw, sw.transport)
 }
 
