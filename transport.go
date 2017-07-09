@@ -1,11 +1,18 @@
 package swim
 
 import (
+	"errors"
+	"fmt"
 	"net"
+)
+
+const (
+	udpPacketBufSize = 2048
 )
 
 type transport interface {
 	PacketCh() chan *packet
+	sendData(string, []byte) error
 }
 
 // will be an interface
@@ -26,6 +33,7 @@ func newTransport(addr string, port int) (*Transport, error) {
 		log.Error(err)
 	}
 
+	go tr.listenUDP()
 	return tr, nil
 }
 
@@ -42,6 +50,40 @@ func (tr *Transport) setupUDPListener(addr string, port int) error {
 	return nil
 }
 
+func (tr *Transport) listenUDP() {
+	for {
+		buf := make([]byte, udpPacketBufSize)
+
+		n, addr, err := tr.udpListener.ReadFromUDP(buf)
+		if err != nil {
+			log.Error("could not read %v", err)
+			continue
+		}
+
+		tr.packetCh <- &packet{buf: buf[:n], from: addr}
+	}
+}
+
 func (tr *Transport) PacketCh() chan *packet {
 	return tr.packetCh
+}
+
+func (tr *Transport) sendData(addr string, data []byte) error {
+	conn, err := net.Dial("udp", addr)
+	if err != nil {
+		return err
+	}
+
+	size, err := conn.Write(data)
+	if err != nil {
+		return err
+	}
+
+	if len(data) != size {
+		msg := fmt.Sprintf("failed writing data %d/%d\n", size, len(data))
+		return errors.New(msg)
+	}
+
+	log.Debugf("Sucess sending data %d bytes to %s\n", size, addr)
+	return nil
 }

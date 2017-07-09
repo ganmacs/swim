@@ -139,8 +139,8 @@ func (sw *Swim) NodeSize() int {
 }
 
 func (sw *Swim) handlePingMsg(p *ping) {
-	// ack := ack{Id: p.Id, Name: p.From, From: sw.Name}
-	// send
+	ack := ack{Id: p.Id, Name: p.From, From: sw.Name}
+	sw.session.sendAckMsg(p.From, &ack)
 }
 
 func (sw *Swim) handleAckMsg(a *ack) {
