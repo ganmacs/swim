@@ -1,8 +1,6 @@
 package swim
 
 import (
-	"net"
-	"strconv"
 	"time"
 )
 
@@ -14,27 +12,32 @@ const (
 )
 
 type Node struct {
-	addr string
-	port int
-
-	state state
+	state
+	name string
 }
 
 type state struct {
-	kind        stateType
+	status      stateType
 	lastChange  time.Time
 	incarnation uint64
 }
 
-func (nd *Node) Address() string {
-	return net.JoinHostPort(nd.addr, strconv.Itoa(nd.port))
+func newNode(name string, inc uint64) *Node {
+	return &Node{
+		name: name,
+		state: state{
+			status:      deadState,
+			lastChange:  time.Now(),
+			incarnation: inc,
+		},
+	}
 }
 
-func (nd *Node) aliveNode() {
-	if nd.state.kind == aliveState {
+func (nd *Node) asAliveNode() {
+	if nd.state.status == aliveState {
 		return
 	}
 
-	nd.state.kind = aliveState
+	nd.state.status = aliveState
 	nd.state.lastChange = time.Now()
 }
