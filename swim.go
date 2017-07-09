@@ -80,6 +80,7 @@ func (sw *Swim) Join(addrs string) (int, error) {
 func (sw *Swim) start() {
 	log.Infof("Starting Node... %s\n", sw.Name)
 	go sw.session.listen(sw)
+	go tick(sw.config.ProbeInterval, sw.probe)
 }
 
 func (sw *Swim) setAliveState() error {
@@ -156,4 +157,8 @@ func (sw *Swim) handleSuspectedMsg(s *suspected) {
 }
 
 func (sw *Swim) handleDeadMsg(d *dead) {
+}
+
+func (sw *Swim) probe() {
+	log.Debug("Start Probing...")
 }

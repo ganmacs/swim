@@ -4,6 +4,7 @@ import (
 	"math/rand"
 	"net"
 	"strconv"
+	"time"
 )
 
 func joinHostPort(host string, port int) string {
@@ -16,4 +17,16 @@ func randInt(n int) int {
 	}
 
 	return (rand.Int() % n)
+}
+
+func tick(interval time.Duration, fn func()) {
+	t := time.NewTicker(interval)
+
+	for {
+		select {
+		case <-t.C:
+			fn()
+			// shutdown channel
+		}
+	}
 }

@@ -25,7 +25,7 @@ func DefaultConfig() *Config {
 	return &Config{
 		BindAddr:      "0.0.0.0",
 		BindPort:      8000,
-		ProbeInterval: 2,
+		ProbeInterval: time.Second * 2,
 		ProbeTimeout:  time.Second * 3,
 		SwimIterval:   time.Second * 2,
 		SwimNodeCount: 3,
