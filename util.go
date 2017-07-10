@@ -25,7 +25,7 @@ func tick(interval time.Duration, fn func()) {
 	for {
 		select {
 		case <-t.C:
-			fn()
+			go fn()
 			// shutdown channel
 		}
 	}

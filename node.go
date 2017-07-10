@@ -22,13 +22,12 @@ type state struct {
 	incarnation uint64
 }
 
-func newNode(name string, inc uint64) *Node {
+func newNode(name string) *Node {
 	return &Node{
 		name: name,
 		state: state{
-			status:      deadState,
-			lastChange:  time.Now(),
-			incarnation: inc,
+			status:     deadState,
+			lastChange: time.Now(),
 		},
 	}
 }
